@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tus Carritos Alex Dev</title>
+
+   <!--
+
+Contáctame:
+
+   * Crea tus diseños sin código
+ https://comparte-amor.vercel.app/
+
+    * Invitame un café
+ https://buymeacoffee.com/alexx.dev
+
+    * Portafolio Web
+ https://alexxdev.vercel.app
+
+    * Sigueme en tiktok
+ https://www.tiktok.com/@alexx.dev?is_from_webapp=1&sender_device=pc
+ 
+    * Canal de WhatsApp
+ https://whatsapp.com/channel/0029VazQEXq90x2vIdNkrH1p
+
+
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+
+  * {
+  cursor: url('naturaleza.png'), auto !important;
+  
+}
+  html, body { 
+    margin: 0; 
+    height: 100%; 
+    background: #000; 
+    overflow: hidden; 
+    font-family: sans-serif; 
+    touch-action: none;
+  }
+  canvas { display: block; }
+
+  #white-flash {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at center, #ffffff 0%, #cce5ff 100%);
+    z-index: 2500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 2s cubic-bezier(0.1, 0.9, 0.2, 1);
+  }
+
+  #start-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at center, #001133 0%, #000000 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+    color: #00aaff;
+    font-weight: 700;
+    transition: opacity 0.8s ease;
+    flex-direction: column;
+    text-align: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+  #start-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #loading-title {
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px #0088ff;
+    letter-spacing: 2px;
+  }
+
+  #loader-container {
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+  }
+  #speed-text {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 0 20px #00aaff;
+    margin-bottom: 30px;
+    font-family: "Playfair Display", serif;
+  }
+  #track-line {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    position: relative;
+    border-radius: 2px;
+  }
+  #car-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0%;
+    transform: translateX(-50%) translateY(50%);
+    display: flex;
+    align-items: center;
+    transition: left 0.1s linear;
+  }
+  #car-img {
+    width: 200px; 
+    height: auto;
+    position: relative;
+    z-index: 2;
+  }
+  .turbo-flame {
+    width: 50px;
+    height: 15px;
+    background: linear-gradient(to right, transparent, #ff0000, #ff5500);
+    border-radius: 50%;
+    margin-right: -15px;
+    animation: turbo-flicker 0.1s infinite alternate;
+    box-shadow: 0 0 15px red;
+  }
+  @keyframes turbo-flicker {
+    0% { transform: scaleX(1) translateY(2px); opacity: 0.8; }
+    100% { transform: scaleX(1.4) translateY(-2px); opacity: 1; }
+  }
+
+  #card-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 5, 20, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 4000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  #card-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #card-img-content {
+    max-width: 90%;
+    max-height: 80vh;
+    border: 4px solid #00aaff;
+    border-radius: 15px;
+    box-shadow: 0 0 40px #0088ff;
+    transform: scale(0.7);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    object-fit: contain;
+  }
+  #card-modal.active #card-img-content {
+    transform: scale(1);
+  }
+  #close-modal {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    text-shadow: 0 0 15px #00aaff;
+    transition: color 0.2s;
+  }
+  #close-modal:hover { color: #ff0000; }
+
+  @media (max-width: 480px) {
+    #loading-title { font-size: 1.6rem; }
+    #speed-text { font-size: 3rem; }
+    #car-img { width: 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="white-flash"></div>
+
+<div id="start-screen">
+  <div id="loading-title">Cargando tus carritos <br> Hot Wheels...</div>
+  <div id="loader-container">
+    <div id="speed-text">0%</div>
+    <div id="track-line">
+        <div id="car-wrapper">
+            <div class="turbo-flame"></div>
+            <img src="auto0.png" id="car-img" alt="Carro">
+        </div>
+    </div>
+  </div>
+</div>
+
+<div id="card-modal">
+  <span id="close-modal">&times;</span>
+  <img id="card-img-content" src="" alt="Carta Hot Wheels">
+</div>
+
+<canvas id="c"></canvas>
+
+<audio id="audio" loop="" src="assets/sound.mp3" preload="auto"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
+<script>
+const startScreen = document.getElementById('start-screen');
+const flashScreen = document.getElementById('white-flash');
+const audio = document.getElementById('audio');
+audio.preload = 'auto';
+audio.load();
+
+const speedText = document.getElementById('speed-text');
+const carWrapper = document.getElementById('car-wrapper');
+
+let experienceStarted = false;
+let extrasOpacity = 0;
+
+let percent = 0;
+let loaderInterval = setInterval(() => {
+  percent += Math.floor(Math.random() * 4) + 1;
+  if (percent >= 100) percent = 100;
+  
+  speedText.innerText = percent + '%';
+  carWrapper.style.left = percent + '%';
+  
+  if (percent === 100) {
+      clearInterval(loaderInterval);
+      setTimeout(() => {
+          unlockAudioAndStart(); 
+      }, 600);
+  }
+}, 50);
+
+const customUniforms = {
+  uTime: { value: 0.0 }
+};
+
+function unlockAudioAndStart() {
+  if (experienceStarted) return;
+  experienceStarted = true;
+  
+  const playPromise = audio.play();
+  if (playPromise && typeof playPromise.catch === 'function') {
+    playPromise.catch(err => console.log("Audio esperando interacción del usuario:", err));
+  }
+  
+  startScreen.classList.add('hidden');
+  flashScreen.style.opacity = '1';
+  setTimeout(() => {
+    flashScreen.style.opacity = '0'; 
+  }, 150);
+}
+
+document.addEventListener('pointerdown', () => {
+    if (experienceStarted && audio.paused) {
+        audio.play().catch(e => console.log(e));
+    }
+}, { once: true });
+
+
+const isMobile = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent) || window.innerWidth <= 820;
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias: !isMobile});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5));
+renderer.setSize(innerWidth, innerHeight);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 5000);
+
+let targetDist = 450, currentDist = 450;
+let rotX = 0.2; 
+let rotY = 0;   
+
+const loader = new THREE.TextureLoader();
+const nebulaTex = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/cube/space/px.jpg');
+scene.background = nebulaTex;
+
+function makeDotTexture(r1=255, g1=255, b1=255, r2=0, g2=170, b2=255){
+  const size = 64;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+  grad.addColorStop(0.0, `rgba(${r1},${g1},${b1},1)`);
+  grad.addColorStop(0.3, `rgba(${r1},${g1},${b1},1)`);
+  grad.addColorStop(0.7, `rgba(${r2},${g2},${b2},0.8)`);
+  grad.addColorStop(1.0, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  return new THREE.CanvasTexture(c);
+}
+const dotTexture = makeDotTexture(255,255,255, 0,150,255); // Azulado
+
+function addRandomAttribute(geom) {
+  const count = geom.attributes.position.count;
+  const randoms = new Float32Array(count);
+  for(let i=0; i<count; i++) randoms[i] = Math.random();
+  geom.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
+}
+
+function setupParticleAnimation(material) {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = customUniforms.uTime;
+    shader.vertexShader = `
+      uniform float uTime;
+      attribute float aRandom;
+    ` + shader.vertexShader;
+
+    shader.vertexShader = shader.vertexShader.replace(
+      `#include <begin_vertex>`,
+      `
+      vec3 transformed = vec3( position );
+      vec3 startPos = vec3(0.0, 0.0, 0.0);
+      
+      float delay = aRandom * 0.15; 
+      float progress = clamp(uTime - delay, 0.0, 2.5) / 2.5;
+      
+      float ease = 1.0 - pow(1.0 - progress, 5.0);
+      
+      float overshoot = sin(progress * 3.14159) * (60.0 + aRandom * 80.0);
+      vec3 dir = normalize(position + vec3(0.001));
+      
+      vec3 targetPos = position + dir * (overshoot * (1.0 - progress));
+      transformed = mix(startPos, targetPos, ease);
+      `
+    );
+
+    shader.vertexShader = shader.vertexShader.replace(
+      `gl_PointSize = size;`,
+      `
+      float flash = pow(1.0 - progress, 8.0) * 25.0 * aRandom;
+      gl_PointSize = size * ease + flash;
+      `
+    );
+  };
+}
+
+(function makeStars(count = isMobile ? 800 : 2000, spread=3000){
+  const g = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for(let i=0; i<count; i++){
+    const r = spread * (0.3 + Math.random() * 0.7);
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.acos(2 * Math.random() - 1);
+    pos[i*3+0] = r * Math.sin(ph) * Math.cos(th);
+    pos[i*3+1] = r * Math.cos(ph);
+    pos[i*3+2] = r * Math.sin(ph) * Math.sin(th);
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({
+    size: 3.0, sizeAttenuation: false, map: dotTexture, transparent: true,
+    alphaTest: 0.01, depthWrite: false, opacity: 0.8, color: 0xccddff 
+  })));
+})();
+
+
+function heartCurve(t){
+  const x = 16 * Math.pow(Math.sin(t), 3);
+  const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+  return { x, y };
+}
+
+const HEART_SCALE = 3.5; const HEART_THICKNESS = 5.0; const HEART_DEPTH = 10.0; const HEART_Y_OFFSET = 6;
+const heartPoints = [];
+const HEART_COUNT = isMobile ? 3500 : 6000;
+for (let i = 0; i < HEART_COUNT; i++) {
+  const t = Math.random() * Math.PI * 2;
+  const p0 = heartCurve(t);
+  const p1 = heartCurve(t + 0.001);
+  const tx = p1.x - p0.x, ty = p1.y - p0.y;
+  const tLen = Math.hypot(tx, ty) || 1;
+  const nx = -ty / tLen, ny = tx / tLen;
+  const offset = (Math.random() - 0.5) * HEART_THICKNESS;
+  heartPoints.push(new THREE.Vector3(
+    (p0.x + nx * offset) * HEART_SCALE,
+    (p0.y + ny * offset + HEART_Y_OFFSET) * HEART_SCALE,
+    (Math.random() - 0.5) * HEART_DEPTH
+  ));
+}
+const heartGeom = new THREE.BufferGeometry().setFromPoints(heartPoints);
+addRandomAttribute(heartGeom); 
+const heartMat = new THREE.PointsMaterial({
+  color: 0x0088ff, size: 4.5, map: makeDotTexture(255,255,255, 0,85,255), transparent: true, 
+  alphaTest: 0.01, depthWrite: false, opacity: 1.0, blending: THREE.AdditiveBlending
+});
+setupParticleAnimation(heartMat); 
+const heart = new THREE.Points(heartGeom, heartMat);
+scene.add(heart);
+
+const spiralPoints = [];
+const arms = 4;
+const SPIRAL_COUNT = isMobile ? 1500 : 3500;
+for (let i = 0; i < SPIRAL_COUNT; i++) {
+  const r = Math.random() * 280; 
+  const armIndex = Math.floor(Math.random() * arms);
+  const theta = (armIndex * Math.PI * 2 / arms) + (r * 0.02) + (Math.random() * 0.4 - 0.2);
+  spiralPoints.push(new THREE.Vector3(
+    Math.cos(theta) * r,
+    -35 - (r * 0.4) + (Math.random() * 8 - 4),
+    Math.sin(theta) * r
+  ));
+}
+const spiralGeom = new THREE.BufferGeometry().setFromPoints(spiralPoints);
+addRandomAttribute(spiralGeom); 
+const spiralMat = new THREE.PointsMaterial({
+  color: 0x00aaff, size: 2.4, map: dotTexture, transparent: true, 
+  alphaTest: 0.01, depthWrite: false, opacity: 0.9, blending: THREE.AdditiveBlending
+});
+setupParticleAnimation(spiralMat); 
+const spiral = new THREE.Points(spiralGeom, spiralMat);
+scene.add(spiral);
+
+const DUST_INNER_R = 150; const DUST_OUTER_R = 400;
+const dustPoints = [];
+const DUST_COUNT = isMobile ? 2500 : 5000;
+for (let i = 0; i < DUST_COUNT; i++) {
+  const r = DUST_INNER_R + Math.random() * (DUST_OUTER_R - DUST_INNER_R);
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(2 * Math.random() - 1);
+  dustPoints.push(new THREE.Vector3(
+    r * Math.sin(phi) * Math.cos(theta),
+    r * Math.cos(phi),
+    r * Math.sin(phi) * Math.sin(theta)
+  ));
+}
+const dustGeom = new THREE.BufferGeometry().setFromPoints(dustPoints);
+addRandomAttribute(dustGeom); 
+const dustMat = new THREE.PointsMaterial({
+  color: 0x55ccff, size: 1.8, map: dotTexture, transparent: true, 
+  alphaTest: 0.01, depthWrite: false, opacity: 0.6, blending: THREE.AdditiveBlending
+});
+setupParticleAnimation(dustMat); 
+const dust = new THREE.Points(dustGeom, dustMat);
+scene.add(dust);
+
+function makeGlow(size=1024, c1='0,150,255', c2='0,50,200'){
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(size/2, size/2, size*0.02, size/2, size/2, size*0.5);
+  grad.addColorStop(0, 'rgba(200,230,255,0.6)'); 
+  grad.addColorStop(0.15, 'rgba(' + c1 + ',0.4)'); 
+  grad.addColorStop(0.4, 'rgba(' + c2 + ',0.15)'); 
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = grad; g.fillRect(0, 0, size, size); return new THREE.CanvasTexture(c);
+}
+const glowMaterial = new THREE.SpriteMaterial({map: makeGlow(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending});
+const glow = new THREE.Sprite(glowMaterial);
+glow.scale.set(0, 0, 1); 
+scene.add(glow);
+
+function ringTexture(size=1024){
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'); g.translate(size/2, size/2);
+  const r1 = size*0.35, r2 = size*0.48;
+  const grd = g.createRadialGradient(0, 0, r1*0.6, 0, 0, r2);
+  grd.addColorStop(0.0, 'rgba(150,200,255,1)'); grd.addColorStop(0.3, 'rgba(0,100,255,0.8)');
+  grd.addColorStop(0.7, 'rgba(0,50,200,0.5)'); grd.addColorStop(1.0, 'rgba(0,0,0,0)');
+  g.fillStyle = grd;
+  g.beginPath(); g.arc(0,0,r2,0,Math.PI*2); g.arc(0,0,r1,0,Math.PI*2,true); g.closePath(); g.fill();
+  return new THREE.CanvasTexture(c);
+}
+const ring1 = new THREE.Mesh(new THREE.RingGeometry(80, 115, 128), new THREE.MeshBasicMaterial({map: ringTexture(), transparent: true, side: THREE.DoubleSide, opacity: 0.6, blending: THREE.AdditiveBlending}));
+const ring2 = new THREE.Mesh(new THREE.RingGeometry(125, 155, 128), new THREE.MeshBasicMaterial({map: ringTexture(), transparent: true, side: THREE.DoubleSide, opacity: 0.4, blending: THREE.AdditiveBlending}));
+ring1.rotation.x = ring2.rotation.x = Math.PI/2;
+ring1.scale.set(0,0,0); 
+ring2.scale.set(0,0,0);
+scene.add(ring1); scene.add(ring2);
+
+
+const WORDS = [];
+const baseWords = [
+  '¡Pura Adrenalina! 🏎️', 'Hot Wheels 🏁', 'A Toda Velocidad ⚡',
+  'Súper Autos 🔥', 'Colección Épica 🚘', 'Derrape Perfecto 💨',
+  'Acelerando a Fondo 🚀', 'Pista Extrema 🎢', 'Piloto Estrella 🏆',
+  'Te Amo 🏆',  'Te Amo 🏆', 'Te Amo 🏆', 'Te Amo 🏆',
+
+];
+
+const PHRASE_REPEAT = isMobile ? 2 : 4; 
+for(let i=0; i<PHRASE_REPEAT; i++){ WORDS.push(...baseWords); }
+
+function makeTextTexture(text, color){
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 128;
+  const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let fontSize = 55; ctx.font = `800 ${fontSize}px "Playfair Display", serif`;
+  while (ctx.measureText(text).width > c.width - 50 && fontSize > 26) { fontSize -= 2; ctx.font = `800 ${fontSize}px "Playfair Display", serif`; }
+  
+  ctx.fillStyle = '#ffffff'; 
+  ctx.shadowColor = color; 
+  ctx.shadowBlur = 30; 
+  ctx.fillText(text, c.width/2, c.height/2);
+  ctx.shadowBlur = 10; 
+  ctx.fillText(text, c.width/2, c.height/2);
+
+  return new THREE.CanvasTexture(c);
+}
+const COLORS = ['#0055ff','#0088ff','#00aaff','#33bbff','#0066cc','#0044aa'];
+const textGroup = new THREE.Group(); scene.add(textGroup);
+
+document.fonts.ready.then(() => {
+  for(let i=0; i<WORDS.length; i++){
+    const tex = makeTextTexture(WORDS[i], COLORS[i%COLORS.length]);
+    const mat = new THREE.SpriteMaterial({map: tex, transparent: true, opacity: 0}); 
+    const sp = new THREE.Sprite(mat);
+    sp.scale.set(110, 13.75, 1);
+    const phi = Math.acos(2 * Math.random() - 1); const theta = Math.random() * Math.PI * 2;
+    const r = DUST_INNER_R + Math.random() * (DUST_OUTER_R - DUST_INNER_R - 30);
+    
+    sp.position.y = r * Math.cos(phi);
+    sp.userData = { radiusSinPhi: r * Math.sin(phi), theta: theta, speed: 0.001 + Math.random() * 0.001 };
+    
+    textGroup.add(sp);
+  }
+});
+
+
+const misImagenes = [
+  '1.png', '2.png', '3.png', '4.png', '5.png', '6.png',
+  '7.png', '8.png', '9.png', '10.png', '11.png', '12.png',
+  '1.png', '2.png', '3.png', '4.png', '5.png', '6.png',
+  '7.png', '8.png', '9.png', '10.png', '11.png', '12.png'
+];
+
+const imageGroup = new THREE.Group(); 
+scene.add(imageGroup);
+const texLoader = new THREE.TextureLoader();
+
+misImagenes.forEach((url, i) => {
+  texLoader.load(url, (texture) => {
+    const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0 }); 
+    const sp = new THREE.Sprite(mat);
+    sp.scale.set(40, 40, 1);
+    const phi = Math.acos(2 * Math.random() - 1); const theta = Math.random() * Math.PI * 2;
+    const r = DUST_INNER_R + Math.random() * (DUST_OUTER_R - DUST_INNER_R);
+    
+    sp.position.y = r * Math.cos(phi);
+   sp.userData = { 
+        radiusSinPhi: r * Math.sin(phi), 
+        theta: theta, 
+        speed: 0.001 + Math.random() * 0.0015,
+        imageId: (i % 12) + 1 
+    };
+    
+    imageGroup.add(sp);
+  }, undefined, (err) => console.log('Falta añadir la imagen: ' + url));
+});
+
+let isPointerDown = false;
+let startX = 0, startY = 0;
+let clickStartX = 0, clickStartY = 0;
+let targetRotX = 0.2, targetRotY = 0;
+let velX = 0, velY = 0;
+
+function onDown(e) { 
+    isPointerDown = true; velX = 0; velY = 0; 
+    const t = e.touches ? e.touches[0] : e; 
+    startX = t.clientX; startY = t.clientY; 
+    clickStartX = startX; clickStartY = startY;
+}
+function onMove(e) {
+  if (!isPointerDown) return;
+  if (e.touches && e.touches.length > 1) return; 
+  const t = e.touches ? e.touches[0] : e; const dx = t.clientX - startX; const dy = t.clientY - startY;
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+    const sensX = (Math.PI * 1.5) / innerWidth; const sensY = (Math.PI * 0.8) / innerHeight;
+    velY = -dx * sensX; velX = dy * sensY; targetRotY += velY; targetRotX = Math.max(-1.25, Math.min(1.25, targetRotX + velX));
+    startX = t.clientX; startY = t.clientY;
+  }
+}
+function onUp() { isPointerDown = false; }
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const cardModal = document.getElementById('card-modal');
+const cardImgContent = document.getElementById('card-img-content');
+
+function checkClickOnSprite(clientX, clientY) {
+    if(cardModal.classList.contains('active')) return; 
+
+    const dist = Math.hypot(clientX - clickStartX, clientY - clickStartY);
+    if(dist < 10) {
+        mouse.x = (clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+        
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(imageGroup.children);
+        
+        if (intersects.length > 0) {
+            const clickedSprite = intersects[0].object;
+            const imgId = clickedSprite.userData.imageId;
+            abrirCarta(imgId);
+        }
+    }
+}
+
+function abrirCarta(id) {
+    cardImgContent.src = `carta${id}.jpg`;
+    cardModal.classList.add('active');
+}
+
+document.getElementById('close-modal').addEventListener('click', () => {
+    cardModal.classList.remove('active');
+});
+cardModal.addEventListener('click', (e) => {
+    if(e.target === cardModal) {
+        cardModal.classList.remove('active');
+    }
+});
+
+const dom = renderer.domElement;
+dom.addEventListener('mousedown', onDown); 
+dom.addEventListener('mousemove', onMove); 
+window.addEventListener('mouseup', (e) => {
+    onUp();
+    checkClickOnSprite(e.clientX, e.clientY);
+});
+
+dom.addEventListener('touchstart', onDown, {passive: true}); 
+dom.addEventListener('touchmove', onMove, {passive: true});
+window.addEventListener('touchend', (e) => {
+  if (!e.touches || e.touches.length === 0) { 
+      onUp(); 
+      if(e.changedTouches && e.changedTouches.length > 0) {
+          checkClickOnSprite(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+      }
+  } else { 
+      const t = e.touches[0]; startX = t.clientX; startY = t.clientY; 
+  }
+}, {passive: true});
+
+addEventListener('wheel', (e) => {
+  targetDist += e.deltaY * 0.25; targetDist = Math.max(180, Math.min(1100, targetDist));
+}, {passive: true});
+
+let pinchDist = null; 
+function getPinchDist(touches) { const dx = touches[0].clientX - touches[1].clientX; const dy = touches[0].clientY - touches[1].clientY; return Math.hypot(dx, dy); }
+
+addEventListener('touchstart', (e) => { if (e.touches.length === 2) { pinchDist = getPinchDist(e.touches); isPointerDown = false; } }, {passive: true});
+addEventListener('touchmove', (e) => {
+  if (e.touches.length === 2) {
+    const newDist = getPinchDist(e.touches);
+    if (pinchDist !== null) { const delta = pinchDist - newDist; targetDist += delta * 0.85; targetDist = Math.max(180, Math.min(1100, targetDist)); }
+    pinchDist = newDist;
+  } else { if (pinchDist !== null) { pinchDist = null; if (e.touches.length === 1) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; isPointerDown = true; } } }
+}, {passive: true});
+addEventListener('touchend', (e) => { if (e.touches.length < 2) { pinchDist = null; } }, {passive: true});
+
+let t = 0;
+const INERTIA_DECAY = 0.88; 
+
+function tick(){
+  requestAnimationFrame(tick);
+  t += 0.01;
+
+  if (experienceStarted) {
+    customUniforms.uTime.value += 0.025; 
+  }
+
+  if (!isPointerDown) {
+    velX *= INERTIA_DECAY; velY *= INERTIA_DECAY;
+    targetRotX = Math.max(-1.25, Math.min(1.25, targetRotX + velX)); targetRotY += velY;
+  }
+
+  rotX += (targetRotX - rotX) * 0.12;
+  rotY += (targetRotY - rotY) * 0.12;
+
+  ring1.rotation.z += 0.002; ring2.rotation.z -= 0.0015;
+  spiral.rotation.y -= 0.0045; dust.rotation.y += 0.0006;
+
+  let globalEase = Math.min(1.0, customUniforms.uTime.value / 4.0);
+  let smoothGlobal = 1.0 - Math.pow(1.0 - globalEase, 3.0); 
+
+  let glowScale = 300 * smoothGlobal * (1 + Math.sin(t*0.5)*0.05);
+  glow.scale.set(glowScale, glowScale, 1);
+  ring1.scale.set(smoothGlobal, smoothGlobal, smoothGlobal);
+  ring2.scale.set(smoothGlobal, smoothGlobal, smoothGlobal);
+
+  const s = 1.0 + 0.08 * Math.sin(t * 5);
+  heart.scale.set(s, s, s);
+
+  if (customUniforms.uTime.value > 4.5) {
+    if (extrasOpacity < 1) {
+      extrasOpacity += 0.008; 
+    }
+  }
+
+  textGroup.children.forEach(sp => {
+    sp.material.opacity = (0.9 + 0.1 * Math.sin(t * 2)) * extrasOpacity;
+    sp.userData.theta += sp.userData.speed;
+    sp.position.x = sp.userData.radiusSinPhi * Math.cos(sp.userData.theta);
+    sp.position.z = sp.userData.radiusSinPhi * Math.sin(sp.userData.theta);
+  });
+
+  imageGroup.children.forEach(sp => {
+    sp.material.opacity = (0.9 + 0.1 * Math.sin(t * 1.5)) * extrasOpacity;
+    sp.userData.theta += sp.userData.speed;
+    sp.position.x = sp.userData.radiusSinPhi * Math.cos(sp.userData.theta);
+    sp.position.z = sp.userData.radiusSinPhi * Math.sin(sp.userData.theta);
+  });
+
+  currentDist += (targetDist - currentDist) * 0.06;
+
+  const camX = currentDist * Math.cos(rotX) * Math.sin(rotY);
+  const camY = currentDist * Math.sin(rotX);
+  const camZ = currentDist * Math.cos(rotX) * Math.cos(rotY);
+  camera.position.set(camX, camY, camZ);
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+}
+tick();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+
+   <!--
+
+Contáctame:
+
+   * Crea tus diseños sin código
+ https://comparte-amor.vercel.app/
+
+    * Invitame un café
+ https://buymeacoffee.com/alexx.dev
+
+    * Portafolio Web
+ https://alexxdev.vercel.app
+
+    * Sigueme en tiktok
+ https://www.tiktok.com/@alexx.dev?is_from_webapp=1&sender_device=pc
+ 
+    * Canal de WhatsApp
+ https://whatsapp.com/channel/0029VazQEXq90x2vIdNkrH1p
+
+
+-->
+</html>
